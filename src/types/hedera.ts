@@ -22,8 +22,8 @@ export interface TransactionResult {
 
 export interface TopicMessage {
   sequenceNumber: string;
-  message: string;
-  consensusTimestamp: string;
+  contents: string;
+  consensusTimestamp: Date;
   runningHash: string;
 }
 

@@ -3,6 +3,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import WalletConnect from '@/components/WalletConnect';
 import AccountDashboard from '@/components/AccountDashboard';
 import TransferHbar from '@/components/TransferHbar';
+import CreateToken from '@/components/CreateToken';
+import AssociateToken from '@/components/AssociateToken';
+import TransferToken from '@/components/TransferToken';
+import CreateTopic from '@/components/CreateTopic';
+import SendMessage from '@/components/SendMessage';
+import TopicMessages from '@/components/TopicMessages';
 import { Wallet, Send, Coins, MessageCircle, Settings } from 'lucide-react';
 
 const Index = () => {
@@ -101,46 +107,24 @@ const Index = () => {
           <TabsContent value="send" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <TransferHbar />
-              <div className="bg-gradient-card border border-primary/20 rounded-lg p-6 shadow-card">
-                <h3 className="text-lg font-semibold mb-2">Token Transfers</h3>
-                <p className="text-muted-foreground text-sm">
-                  Token transfer functionality coming soon...
-                </p>
-              </div>
+              <TransferToken />
             </div>
           </TabsContent>
 
           <TabsContent value="tokens" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gradient-card border border-primary/20 rounded-lg p-6 shadow-card">
-                <h3 className="text-lg font-semibold mb-2">Create Token</h3>
-                <p className="text-muted-foreground text-sm">
-                  Create new fungible tokens on Hedera Token Service...
-                </p>
-              </div>
-              <div className="bg-gradient-card border border-primary/20 rounded-lg p-6 shadow-card">
-                <h3 className="text-lg font-semibold mb-2">Associate Token</h3>
-                <p className="text-muted-foreground text-sm">
-                  Associate your account with existing tokens...
-                </p>
-              </div>
+              <CreateToken />
+              <AssociateToken />
             </div>
           </TabsContent>
 
           <TabsContent value="topics" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gradient-card border border-primary/20 rounded-lg p-6 shadow-card">
-                <h3 className="text-lg font-semibold mb-2">Create Topic</h3>
-                <p className="text-muted-foreground text-sm">
-                  Create new topics for message consensus...
-                </p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-6">
+                <CreateTopic />
+                <SendMessage />
               </div>
-              <div className="bg-gradient-card border border-primary/20 rounded-lg p-6 shadow-card">
-                <h3 className="text-lg font-semibold mb-2">Send Messages</h3>
-                <p className="text-muted-foreground text-sm">
-                  Send messages to Hedera topics...
-                </p>
-              </div>
+              <TopicMessages />
             </div>
           </TabsContent>
 

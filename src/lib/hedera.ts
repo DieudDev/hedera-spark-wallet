@@ -12,8 +12,10 @@ import {
   TopicCreateTransaction,
   TopicMessageSubmitTransaction,
   TopicMessageQuery,
+  TokenId,
+  TopicId,
 } from "@hashgraph/sdk";
-import { HederaAccount, TransactionResult, HederaToken, HederaTopic } from "@/types/hedera";
+import { HederaAccount, TransactionResult, HederaToken, HederaTopic, TopicMessage } from "@/types/hedera";
 
 // Use testnet for development
 const client = Client.forTestnet();
@@ -186,6 +188,86 @@ export class HederaService {
         success: false,
         error: `Message submission failed: ${error}`,
       };
+    }
+  }
+
+  async sendToken(
+    toAccountId: string,
+    tokenId: string,
+    amount: number
+  ): Promise<TransactionResult> {
+    try {
+      const transaction = await new TransferTransaction()
+        .addTokenTransfer(tokenId, this.client.operatorAccountId!, -amount)
+        .addTokenTransfer(tokenId, toAccountId, amount)
+        .freezeWith(this.client);
+
+      const signedTransaction = await transaction.sign(this.operatorPrivateKey!);
+      const response = await signedTransaction.execute(this.client);
+      const receipt = await response.getReceipt(this.client);
+
+      return {
+        success: true,
+        transactionId: response.transactionId?.toString(),
+        details: receipt.status.toString(),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Token transfer failed: ${error}`,
+      };
+    }
+  }
+
+  async getTopicMessages(topicId: string): Promise<TopicMessage[]> {
+    try {
+      const messages: TopicMessage[] = [];
+      
+      await new TopicMessageQuery()
+        .setTopicId(topicId)
+        .setStartTime(0)
+        .subscribe(this.client, null, (message) => {
+          messages.push({
+            sequenceNumber: message.sequenceNumber.toString(),
+            contents: new TextDecoder().decode(message.contents),
+            consensusTimestamp: message.consensusTimestamp.toDate(),
+            runningHash: message.runningHash.toString(),
+          });
+        });
+
+      return messages;
+    } catch (error) {
+      throw new Error(`Failed to retrieve topic messages: ${error}`);
+    }
+  }
+
+  subscribeToTopic(
+    topicId: string,
+    onMessage: (message: TopicMessage) => void,
+    onError?: (error: Error) => void
+  ): () => void {
+    try {
+      const subscription = new TopicMessageQuery()
+        .setTopicId(topicId)
+        .setStartTime(Date.now())
+        .subscribe(
+          this.client,
+          null,
+          (message) => {
+            const topicMessage: TopicMessage = {
+              sequenceNumber: message.sequenceNumber.toString(),
+              contents: new TextDecoder().decode(message.contents),
+              consensusTimestamp: message.consensusTimestamp.toDate(),
+              runningHash: message.runningHash.toString(),
+            };
+            onMessage(topicMessage);
+          }
+        );
+
+      return () => subscription.unsubscribe();
+    } catch (error) {
+      onError?.(new Error(`Failed to subscribe to topic: ${error}`));
+      return () => {};
     }
   }
 }
