@@ -23,6 +23,8 @@ const client = Client.forTestnet();
 export class HederaService {
   private client: Client;
   private operatorPrivateKey: PrivateKey | null = null;
+  private operatorAccountId: AccountId | null = null;
+  private isOperatorSet: boolean = false;
   
   constructor() {
     this.client = Client.forTestnet();
@@ -34,24 +36,62 @@ export class HederaService {
       const operatorKey = PrivateKey.fromString(privateKey);
       this.client.setOperator(operatorId, operatorKey);
       this.operatorPrivateKey = operatorKey;
+      this.operatorAccountId = operatorId;
+      this.isOperatorSet = true;
+      console.log('✅ Hedera operator set successfully:', accountId);
     } catch (error) {
+      this.isOperatorSet = false;
       throw new Error(`Invalid credentials: ${error}`);
     }
   }
 
+  isConnected(): boolean {
+    return this.isOperatorSet && this.client.operatorAccountId !== null;
+  }
+
   async getAccountInfo(accountId: string): Promise<HederaAccount> {
+    if (!this.isConnected()) {
+      throw new Error('Hedera client not connected. Please set operator credentials first.');
+    }
+
     try {
+      console.log('🔍 Fetching account info for:', accountId);
       const accountInfo = await new AccountInfoQuery()
         .setAccountId(accountId)
         .execute(this.client);
+
+      console.log('✅ Account info retrieved:', {
+        accountId,
+        balance: accountInfo.balance.toString(),
+        tokenCount: accountInfo.tokenRelationships?.size || 0
+      });
+
+      // Convert token relationships to our format
+      const tokens = [];
+      if (accountInfo.tokenRelationships) {
+        // TokenRelationshipMap doesn't have entries method, iterate differently
+        const tokenMap = accountInfo.tokenRelationships as any;
+        for (const tokenId in tokenMap) {
+          if (tokenMap.hasOwnProperty(tokenId)) {
+            const relationship = tokenMap[tokenId];
+            tokens.push({
+              tokenId: tokenId,
+              name: `Token ${tokenId}`, // In real implementation, fetch token details
+              symbol: 'TKN',
+              balance: relationship.balance?.toString() || '0'
+            });
+          }
+        }
+      }
 
       return {
         accountId,
         privateKey: '', // Don't store private key in account info
         balance: accountInfo.balance.toString(),
-        tokens: [], // Will be populated separately
+        tokens,
       };
     } catch (error) {
+      console.error('❌ Failed to get account info:', error);
       throw new Error(`Failed to get account info: ${error}`);
     }
   }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import WalletConnect from '@/components/WalletConnect';
 import AccountDashboard from '@/components/AccountDashboard';
+import DemoAccountDashboard from '@/components/DemoAccountDashboard';
 import TransferHbar from '@/components/TransferHbar';
 import CreateToken from '@/components/CreateToken';
 import AssociateToken from '@/components/AssociateToken';
@@ -22,17 +23,36 @@ const Index = () => {
     const storedAccountId = localStorage.getItem('hedera_account_id');
     const storedPrivateKey = localStorage.getItem('hedera_private_key');
     
+    console.log('🔄 Checking stored credentials:', { 
+      hasAccountId: !!storedAccountId, 
+      hasPrivateKey: !!storedPrivateKey 
+    });
+    
     if (storedAccountId && storedPrivateKey) {
-      setAccountId(storedAccountId);
-      setPrivateKey(storedPrivateKey);
-      setIsConnected(true);
+      console.log('✅ Found stored credentials, connecting...');
+      handleConnect(storedAccountId, storedPrivateKey);
+    } else {
+      console.log('ℹ️ No stored credentials found');
     }
   }, []);
 
   const handleConnect = (accountId: string, privateKey: string) => {
+    console.log('🔌 Connecting wallet:', accountId);
     setAccountId(accountId);
     setPrivateKey(privateKey);
-    setIsConnected(!!accountId && !!privateKey);
+    const connected = !!accountId && !!privateKey;
+    setIsConnected(connected);
+    
+    if (connected) {
+      // Set operator in Hedera service
+      try {
+        const { hederaService } = require('@/lib/hedera');
+        hederaService.setOperator(accountId, privateKey);
+        console.log('✅ Wallet connected and operator set');
+      } catch (error) {
+        console.error('❌ Failed to set operator:', error);
+      }
+    }
   };
 
   if (!isConnected) {
@@ -112,7 +132,11 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6">
-            <AccountDashboard accountId={accountId} />
+            {isConnected && accountId ? (
+              <AccountDashboard accountId={accountId} />
+            ) : (
+              <DemoAccountDashboard />
+            )}
           </TabsContent>
 
           <TabsContent value="send" className="space-y-6">

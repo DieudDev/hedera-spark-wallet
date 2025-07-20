@@ -27,9 +27,18 @@ const AccountDashboard: React.FC<AccountDashboardProps> = ({ accountId }) => {
     }
     
     try {
+      console.log('📊 Fetching account info for dashboard:', accountId);
+      
+      // Check if Hedera service is connected
+      if (!hederaService.isConnected()) {
+        throw new Error('Hedera client not connected. Please reconnect your wallet.');
+      }
+      
       const accountInfo = await hederaService.getAccountInfo(accountId);
       setAccount(accountInfo);
       setLastUpdate(new Date());
+      
+      console.log('✅ Dashboard data updated successfully');
       
       if (isRefresh) {
         toast({
@@ -38,13 +47,25 @@ const AccountDashboard: React.FC<AccountDashboardProps> = ({ accountId }) => {
         });
       }
     } catch (error) {
-      console.warn('Account fetch error:', error);
-      // Only show error toast for manual refreshes to avoid spam
-      if (isRefresh) {
+      console.warn('⚠️ Account fetch error:', error);
+      
+      // Show more helpful error messages
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      
+      if (errorMessage.includes('not connected')) {
+        // Only show error toast for manual refreshes to avoid spam
+        if (isRefresh) {
+          toast({
+            variant: "destructive",
+            title: "Connection lost",
+            description: "Please reconnect your wallet in Settings"
+          });
+        }
+      } else if (isRefresh) {
         toast({
           variant: "destructive",
           title: "Failed to refresh account",
-          description: error instanceof Error ? error.message : "Network error - will retry automatically"
+          description: "Network error - will retry automatically"
         });
       }
     } finally {
