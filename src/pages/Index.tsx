@@ -9,6 +9,7 @@ import TransferToken from '@/components/TransferToken';
 import CreateTopic from '@/components/CreateTopic';
 import SendMessage from '@/components/SendMessage';
 import TopicMessages from '@/components/TopicMessages';
+import ThemeToggle from '@/components/ThemeToggle';
 import { Wallet, Send, Coins, MessageCircle, Settings } from 'lucide-react';
 
 const Index = () => {
@@ -36,15 +37,18 @@ const Index = () => {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4 relative">
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
+        </div>
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-4">
-              <div className="p-3 bg-gradient-primary rounded-full shadow-glow">
-                <Wallet className="h-8 w-8 text-primary-foreground" />
+              <div className="p-3 bg-gradient-primary rounded-full shadow-glow animate-pulse-glow">
+                <Wallet className="h-8 w-8 text-primary-foreground animate-float" />
               </div>
             </div>
-            <h1 className="text-3xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent animate-gradient">
               Hedera Wallet
             </h1>
             <p className="text-muted-foreground">
@@ -58,21 +62,28 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-4 relative">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-8 text-center">
-          <div className="flex items-center justify-center mb-4">
-            <div className="p-3 bg-gradient-primary rounded-full shadow-glow">
-              <Wallet className="h-8 w-8 text-primary-foreground" />
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div className="text-center flex-1">
+              <div className="flex items-center justify-center mb-4">
+                <div className="p-3 bg-gradient-primary rounded-full shadow-glow animate-pulse-glow">
+                  <Wallet className="h-8 w-8 text-primary-foreground animate-float" />
+                </div>
+              </div>
+              <h1 className="text-3xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent animate-gradient">
+                Hedera Wallet
+              </h1>
+              <p className="text-muted-foreground">
+                Manage your Hedera account and perform transactions
+              </p>
+            </div>
+            <div className="absolute top-4 right-4">
+              <ThemeToggle />
             </div>
           </div>
-          <h1 className="text-3xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
-            Hedera Wallet
-          </h1>
-          <p className="text-muted-foreground">
-            Manage your Hedera account and perform transactions
-          </p>
         </div>
 
         {/* Main Content */}
